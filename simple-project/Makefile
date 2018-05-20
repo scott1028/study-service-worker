@@ -1,0 +1,2 @@
+lift:
+	yarn http-server

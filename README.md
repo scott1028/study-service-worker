@@ -1,17 +1,3 @@
-# Reference
+## README
 
-- Ref: https://rjzaworski.com/2015/06/testing-api-requests-from-window-fetch
-Ref: https://developer.mozilla.org/en-US/docs/Web/API/FetchEvent/respondWith#Examples
-Ref: https://lavas.baidu.com/pwa/offline-and-cache-loading/service-worker/service-worker-lifecycle
-
-# Simulate Response Object
-
-![Alt text](https://raw.githubusercontent.com/scott1028/study-service-worker/master/response.png "response")
-
-# Consideration
-
-![Alt text](https://raw.githubusercontent.com/scott1028/study-service-worker/master/life_cycle.png "life_cycle")
-
-![Alt text](https://raw.githubusercontent.com/scott1028/study-service-worker/master/claim_for_apply.png "claim_for_apply")
-
-![Alt text](https://raw.githubusercontent.com/scott1028/study-service-worker/master/intercept_fetch.png "intercept_fetch")
+#### serviceWorker 的開發測試建議用 incognito mode 並且使用重新開啟瀏覽器方式保證避免於 claim() 後 navigator.serviceWorker.controller = null 的問題！

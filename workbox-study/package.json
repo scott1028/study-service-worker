@@ -1,0 +1,12 @@
+{
+  "name": "workbox-study",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "http-server"
+  },
+  "dependencies": {
+    "http-server": "^0.11.1"
+  }
+}

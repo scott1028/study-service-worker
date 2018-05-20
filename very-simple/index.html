@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+  <button
+    id="test"
+    onclick="
+      fetch(`test`).then(resp => resp.text()).then(data => console.log(data, new Date().getTime()));
+    ">
+    Fetch Test
+  </button>
+  <button
+    id="test"
+    onclick="
+      fetch(`nocache`).then(resp => resp.text()).then(data => console.log(data, new Date().getTime()));
+    ">
+    Fetch NoCache
+  </button>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js').then(registration => {
+          window.registration = registration;
+        })
+      });
+    }
+  </script>
+</body>
+</html>

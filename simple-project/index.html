@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <script type="text/javascript" src="jquery-3.3.1.js"></script>
+</head>
+<body>
+<h4>Customer Response Rule Here:</h4>
+<textarea id="customInterceptor" style="width: 600px; height: 200px;">
+  function(e) {
+    console.log(e, 1000);
+    e.respondWith(new Response(
+      `{ "msg": "intercepted" }`,
+      {
+        status: 202,
+        headers: { 'Content-type': 'application/json' }
+      }));
+  }
+</textarea>
+<br />
+<button id="add" onclick="addCustomInterceptor();" disabled>Add custom interceptor</button>
+<br />
+<button id="sync" onclick="sendSyncEvent();">Sync</button>
+<script>
+  function sendSyncEvent() {
+    let tag = `id-${new Date().getTime()}`;
+    registration.sync.register(tag).then(() => {
+      console.log('後台同步已觸發, 但是要等 onLine SW 的 sync event 才會觸發!! 等 onLine=true sw\' s sync 才會觸發!!', tag);
+    }).catch(err => {
+      console.log('後台同步觸發失敗', err);
+    });
+  };
+
+  function addCustomInterceptor() {
+    let script = document.querySelector('#customInterceptor').value;
+    registration.active.postMessage(script);
+  };
+
+  function testCaseFetch(desc) {
+    document.querySelector('#add').disabled = false;
+
+    // try to test mock response setup up by service-worker
+    fetch(`anyPath${new Date().getTime()}/`).then(async (resp) => {
+      console.log(`[${desc}]`, await resp.text());
+    }).then(() => {
+      fetch(`anyPath${new Date().getTime()}/`).then(async (resp) => {
+        console.log(`[${desc}]`, await resp.text());
+      });
+    });
+  }
+
+  if(navigator.serviceWorker !== null) {
+    // 使用瀏覽器特定方法註冊一個新的service worker
+    // 
+    // Noet!!! 如果 service-worker.js 已經註冊安裝過，service-worker 內容的 script 將不再被執行一次(ex: install, activate, etc)
+    // 
+    console.log('[before registration]');
+    // *** service-worker.js 會自動更新... 每次都會嘗試去找 remote 的最新版本來替換當前的 cache, 所以當離線的時候這個 service-worker.js 更新會拋錯!!! ***
+    navigator.serviceWorker.register('service-worker.js').then(function(registration) {
+      // after service-worker ready
+
+      window.registration = registration;
+      console.log('Registered events at scope: ', registration.scope);
+      
+      // 在註冊服務工作線程後，它將完成 install 和 activate 生命週期事件。在激活服務工作線程後，它可以處理 fetch 事件以對網絡應用進行任意後續訪問。根據服務工作線程的作用域，它將在請求任意頁面之前啓動，如果您仔細想一下，就會明白這非常有道理。如果在訪問頁面之前，現有服務工作線程還沒有運行，那麼，它將沒有機會針對導航請求履行 fetch 事件。
+      if(window.registration.active) {
+        console.log(`Service worker state:`, registration.active.state);
+        if(registration.active.state) {
+          ServiceWorkerIsReadySomehow('DirectlyBeacuseOfServiceWorkerIsActivatedBefore');
+        }
+      }
+      // 
+      // [ I think below usecase is no useful for most project ]
+      // 
+      // try to test with a time delay, because you neet to wait service-worker invokes the .claim method to control this page.
+      // setTimeout(() => {
+      //   // test preload cache created by service-worker
+      //   fetch('index.html').then(async (resp) => {
+      //     console.log(await resp.text());
+      //   });
+      // }, 2000);
+    });
+
+
+    navigator.serviceWorker.ready.then(() => {
+      // after install state of serviceWorker
+      // but before the activate state of serviceWorker
+      console.log(`Service Worker is ready`, new Date().getTime());
+    });
+
+    // change controller to service-worker from original handler
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // This fires when the service worker controlling this page
+      // changes, eg a new worker has as skipped waiting and become
+      // the new active worker.
+      //
+      // only fired when first register than self.clients.claim(), if reloading this will not fired
+      console.log('In client page, after service worker claimed.', new Date().getTime());
+      ServiceWorkerIsReadySomehow('ByServiceWorkerRegistedJustNow')
+    });
+
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      console.log(`from serviceWorker:`, event);
+    });
+
+    function ServiceWorkerIsReadySomehow(desc) {
+      testCaseFetch(desc);
+
+      setTimeout(() => {
+        registration.active.postMessage('Message from client to SW');
+      }, 2000);
+
+      // wait service worker done, then use cache to img tag!!
+      $(`<img src="resource.gif" />`).appendTo('body');
+    }
+  }
+</script>
+</body>
+</html>

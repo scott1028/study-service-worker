@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <script type="text/javascript" src="jquery-3.3.1.js"></script>
+</head>
+<body>
+<script>
+  function run() {
+    console.log(`[navigator.serviceWorker]`, navigator.serviceWorker);
+    console.log(`[Tutorial] Try fetch('/') and then turn on offLine mode and fetch('/') again to test OffLine Mode Of Workbox!!`);
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('service-worker.js').then(registration => {
+        window.registration = registration;
+
+        // Debug if SW control this page
+        if(window.registration.active) {
+          console.log(`Service worker state:`, registration.active.state);
+          if(registration.active.state) {
+            run();
+          }
+        }
+      });
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // Debug if SW control this page
+        run();
+      });
+    });
+  }
+</script>
+<script src="main.js"></script>
+</body>
+</html>

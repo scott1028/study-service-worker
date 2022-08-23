@@ -4,3 +4,4 @@
 
 #### How to update service worker
 - https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/update#examples
+- https://github.com/mdn/serviceworker-cookbook Cookbook
